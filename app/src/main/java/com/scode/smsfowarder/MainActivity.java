@@ -1,37 +1,38 @@
 package com.scode.smsfowarder;
 
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
-import android.net.http.SslError;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.textclassifier.TextLinks;
-import android.webkit.SslErrorHandler;
 import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+
 import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -92,8 +93,6 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(MainActivity.this, new String[]{"android.permission.SEND_SMS"}, REQUEST_CODE_ASK_PERMISSIONS);
         }
 
-
-
         }
 
     @Override
@@ -143,8 +142,7 @@ public class MainActivity extends AppCompatActivity {
         Intent emailIntent = new Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:"+email));
         emailIntent.putExtra("subject", "Forwarding");
         emailIntent.putExtra("body", msg);
-        startActivity(Intent.createChooser(emailIntent, "Send"));
-        finish();
+        startActivity(emailIntent);
     }
 
     protected void sendPostUrl(String url, String message) throws UnsupportedEncodingException {
@@ -153,5 +151,40 @@ public class MainActivity extends AppCompatActivity {
         String postData = "message=" + URLEncoder.encode(message, "UTF-8");
         webview.postUrl(url,postData.getBytes());
     }
+
+
+    public static void postNewComment(Context context, String url, final String sender, final String message, final String id, final String date){
+        RequestQueue queue = Volley.newRequestQueue(context);
+
+        StringRequest sr = new StringRequest(Request.Method.POST,url, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+            }
+        }){
+            @Override
+            protected Map<String,String> getParams(){
+                Map<String,String> params = new HashMap<String, String>();
+                params.put("sender", sender);
+                params.put("body", message);
+                params.put("id", id);
+                params.put("sent_at", date);
+
+
+
+                return params;
+            }
+
+        };
+
+        queue.add(sr);
+
+    }
+
 
 }

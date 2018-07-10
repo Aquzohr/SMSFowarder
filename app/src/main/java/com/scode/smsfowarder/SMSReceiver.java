@@ -13,6 +13,10 @@ import android.util.Log;
 import android.widget.Toast;
 
 import java.io.UnsupportedEncodingException;
+import java.sql.Time;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class SMSReceiver extends BroadcastReceiver {
     public static final String SMS_BUNDLE = "pdus";
@@ -20,6 +24,11 @@ public class SMSReceiver extends BroadcastReceiver {
     MainActivity inst = MainActivity.instance();
 
     private String lastMessage;
+    private String lastSender;
+    private String lastID;
+    private String lastDate;
+
+
 
     public void onReceive(Context context, Intent intent) {
         Bundle intentExtras = intent.getExtras();
@@ -31,11 +40,21 @@ public class SMSReceiver extends BroadcastReceiver {
 
                 String smsBody = smsMessage.getMessageBody().toString();
                 String address = smsMessage.getOriginatingAddress();
+                String id = String.valueOf(smsMessage.getTimestampMillis());
 
-                smsMessageStr = "From: " + address +  "\n" +
+                Date date = new Date(smsMessage.getTimestampMillis());
+                DateFormat df = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+                String smsDate = df.format(date);
+
+
+                smsMessageStr = "Date: " + smsDate +  "\n" +
+                        "From: " + address +  "\n" +
                         "Message: " +  smsBody+ "\n";
 
                 lastMessage = smsBody;
+                lastSender = address;
+                lastID = id;
+                lastDate = smsDate;
 
             }
 
@@ -48,18 +67,14 @@ public class SMSReceiver extends BroadcastReceiver {
                 String msg = "Send Email Completed";
 
                 inst.sendEmail(inst.getString("email"), lastMessage);
+                //inst.sendBackgoundEmail(inst.getString("email"), lastMessage);
 
                 Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
             }
 
             if(inst.getBoolean("url_switch")){
-                try {
-                    inst.sendPostUrl(inst.getString("url"), lastMessage);
-                    Toast.makeText(context, "Post Url Completed!", Toast.LENGTH_SHORT).show();
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                    Toast.makeText(context, "Post Url none-success!", Toast.LENGTH_SHORT).show();
-                }
+                inst.postNewComment(context,inst.getString("url"), lastSender, lastMessage, lastID, lastDate);
+                Toast.makeText(context, "Post Url Completed!", Toast.LENGTH_SHORT).show();
             }
 
             Toast.makeText(context, smsMessageStr, Toast.LENGTH_SHORT).show();
