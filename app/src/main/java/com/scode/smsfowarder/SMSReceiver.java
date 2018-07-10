@@ -64,16 +64,16 @@ public class SMSReceiver extends BroadcastReceiver {
             }
 
             if(inst.getBoolean("email_switch")){
-                String msg = "Send Email Completed";
+                //String msg = "Send Email Completed";
 
-                inst.sendEmail(inst.getString("email"), lastMessage);
-                //inst.sendBackgoundEmail(inst.getString("email"), lastMessage);
+                //inst.sendEmail(inst.getString("email"), lastMessage);
+                inst.sendBackgoundEmail(inst.getString("email"), lastSender, lastMessage);
 
-                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
+                //Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
             }
 
             if(inst.getBoolean("url_switch")){
-                inst.postNewComment(context,inst.getString("url"), lastSender, lastMessage, lastID, lastDate);
+                inst.sendPostUrl(context,inst.getString("url"), lastSender, lastMessage, lastID, lastDate);
                 Toast.makeText(context, "Post Url Completed!", Toast.LENGTH_SHORT).show();
             }
 

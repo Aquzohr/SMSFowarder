@@ -27,6 +27,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.creativityapps.gmailbackgroundlibrary.BackgroundMail;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -145,15 +146,32 @@ public class MainActivity extends AppCompatActivity {
         startActivity(emailIntent);
     }
 
-    protected void sendPostUrl(String url, String message) throws UnsupportedEncodingException {
-        WebView webview = new WebView(this);
-        setContentView(webview);
-        String postData = "message=" + URLEncoder.encode(message, "UTF-8");
-        webview.postUrl(url,postData.getBytes());
+    protected void sendBackgoundEmail(String email_to, String address, String message){
+        BackgroundMail.newBuilder(this)
+                .withUsername("") //need set less secure to ON
+                .withPassword("")
+                .withMailto(email_to)
+                .withType(BackgroundMail.TYPE_PLAIN)
+                .withSubject(address)
+                .withBody(message)
+                .withOnSuccessCallback(new BackgroundMail.OnSuccessCallback() {
+                    @Override
+                    public void onSuccess() {
+                        //do some magic
+                    }
+                })
+                .withOnFailCallback(new BackgroundMail.OnFailCallback() {
+                    @Override
+                    public void onFail() {
+                        //do some magic
+                    }
+                })
+                .send();
     }
 
 
-    public static void postNewComment(Context context, String url, final String sender, final String message, final String id, final String date){
+    public static void sendPostUrl(Context context, String url, final String sender, final String message, final String id, final String date){
+
         RequestQueue queue = Volley.newRequestQueue(context);
 
         StringRequest sr = new StringRequest(Request.Method.POST,url, new Response.Listener<String>() {
@@ -174,8 +192,6 @@ public class MainActivity extends AppCompatActivity {
                 params.put("body", message);
                 params.put("id", id);
                 params.put("sent_at", date);
-
-
 
                 return params;
             }
